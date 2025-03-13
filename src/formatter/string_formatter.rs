@@ -409,6 +409,21 @@ impl<'a> StringFormatter<'a> {
                 .find(|segment| segment.style().is_some())
         }
 
+        fn remove_double_separators(segments: &mut Vec<Segment>) {
+            let mut i = 0;
+            while i < segments.len() {
+                if i + 1 < segments.len() {
+                    if let Segment::Separator(ref separator) = segments[i] {
+                        if let Segment::Separator(ref next_separator) = segments[i + 1] {
+                            segments.remove(i);
+                            continue;
+                        }
+                    }
+                }
+                i += 1;
+            }
+        }
+
         let mut parsed = parse_format(
             self.format,
             default_style,
@@ -439,6 +454,10 @@ impl<'a> StringFormatter<'a> {
                     }
                 }
             }
+        }
+
+        if let Ok(ref mut parsed_segments) = parsed {
+            remove_double_separators(parsed_segments);
         }
 
         parsed

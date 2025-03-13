@@ -31,8 +31,14 @@ impl SeparatorSegment {
                 resulting_style.background = next.background;
                 resulting_style
             }
-            (Some(prev), None) => prev.clone(),
-            (None, Some(next)) => next.clone(),
+            (Some(prev), None) => {
+                resulting_style.foreground = prev.background;
+                resulting_style
+            }
+            (None, Some(next)) => {
+                resulting_style.background = next.background;
+                resulting_style
+            }
             (None, None) => AnsiStyle::default(),
         }
     }
