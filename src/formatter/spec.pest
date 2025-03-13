@@ -48,7 +48,8 @@ style = { (variable | string)* }
 // Separator
 //
 // A separator blends between two background colors using a powerline symbol
-separator = { "[[" ~ symbol ~ "]]" }
+separator = { "[[" ~ symbol ~ lr_chooser? ~ "]]" }
+lr_chooser = { "l" | "r" }
 symbol = { ANY }
 
 // Conditional

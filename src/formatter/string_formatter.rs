@@ -403,6 +403,7 @@ impl<'a> StringFormatter<'a> {
         }
 
         fn find_last_style(segments: &[Segment]) -> Option<&Segment> {
+            println!("{:?}", segments);
             segments
                 .iter()
                 .rev()
@@ -432,6 +433,10 @@ impl<'a> StringFormatter<'a> {
             context,
         );
 
+        if let Ok(ref mut parsed_segments) = parsed {
+            remove_double_separators(parsed_segments);
+        }
+
         let immutable_parsed = parsed.clone().map_or(vec![], |x| x);
 
         // Get a mutable reference to the parsed result
@@ -447,17 +452,12 @@ impl<'a> StringFormatter<'a> {
                             None
                         };
                         let next_style = immutable_parsed[i + 1].style();
-                        separator.set_style(Some(SeparatorSegment::derive_style(
-                            last_style.unwrap_or_default(),
-                            next_style,
-                        )));
+                        separator.set_style(Some(
+                            separator.derive_style(last_style.unwrap_or(None), next_style),
+                        ));
                     }
                 }
             }
-        }
-
-        if let Ok(ref mut parsed_segments) = parsed {
-            remove_double_separators(parsed_segments);
         }
 
         parsed

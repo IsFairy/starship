@@ -12,6 +12,9 @@ pub struct SeparatorSegment {
 
     /// The string value of the current segment.
     value: String,
+
+    /// The separator direction
+    left: bool,
 }
 
 impl SeparatorSegment {
@@ -23,8 +26,13 @@ impl SeparatorSegment {
         }
     }
 
-    pub fn derive_style(prev: Option<AnsiStyle>, next: Option<AnsiStyle>) -> AnsiStyle {
+    pub fn is_left(&self) -> bool {
+        self.left
+    }
+
+    pub fn derive_style(&self, prev: Option<AnsiStyle>, next: Option<AnsiStyle>) -> AnsiStyle {
         let mut resulting_style = AnsiStyle::default();
+        println!("prev: {:?}, next: {:?}", prev, next);
         match (prev, next) {
             (Some(prev), Some(next)) => {
                 resulting_style.foreground = prev.background;
@@ -32,11 +40,19 @@ impl SeparatorSegment {
                 resulting_style
             }
             (Some(prev), None) => {
-                resulting_style.foreground = prev.background;
+                resulting_style.foreground = if self.left {
+                    prev.foreground
+                } else {
+                    prev.background
+                };
                 resulting_style
             }
             (None, Some(next)) => {
-                resulting_style.background = next.background;
+                resulting_style.foreground = if self.left {
+                    next.background
+                } else {
+                    next.foreground
+                };
                 resulting_style
             }
             (None, None) => AnsiStyle::default(),
@@ -172,9 +188,13 @@ impl Segment {
     where
         T: Into<String>,
     {
+        let s = value.into();
+        let left = s.ends_with("l");
+        let symbol = s.trim_end_matches(['l', 'r']);
         Self::Separator(SeparatorSegment {
             style,
-            value: value.into(),
+            value: String::from(symbol),
+            left,
         })
     }
 
