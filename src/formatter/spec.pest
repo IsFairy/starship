@@ -4,7 +4,7 @@
 //
 // Should be started with SOI and ended with EOI, with a format string in it.
 expression = _{ SOI ~ value* ~ EOI }
-value = _{ text | variable | textgroup | conditional }
+value = _{ text | variable | textgroup | conditional | separator }
 
 // Variable
 //
@@ -44,6 +44,12 @@ escaped_char = { "[" | "]" | "(" | ")" | "\\" | "$" }
 textgroup = { "[" ~ format ~ "]" ~ "(" ~ style ~ ")" }
 format = { value* }
 style = { (variable | string)* }
+
+// Separator
+//
+// A separator blends between two background colors using a powerline symbol
+separator = { "[[" ~ symbol ~ "]]" }
+symbol = { ANY }
 
 // Conditional
 //

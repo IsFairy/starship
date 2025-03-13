@@ -7,12 +7,12 @@ use std::fmt;
 
 use crate::config::{Style, parse_style_string};
 use crate::context::{Context, Shell};
-use crate::segment::Segment;
+use crate::segment::{Segment, SeparatorSegment};
 
 use super::model::*;
 use super::parser::{Rule, parse};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum VariableValue<'a> {
     Plain(Cow<'a, str>),
     NoEscapingPlain(Cow<'a, str>),
@@ -54,6 +54,7 @@ impl From<String> for StringFormatterError {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct StringFormatter<'a> {
     format: Vec<FormatElement<'a>>,
     variables: VariableMapType<'a>,
@@ -391,19 +392,33 @@ impl<'a> StringFormatter<'a> {
                                 Ok(Vec::new())
                             }
                         }
+                        FormatElement::Separator(separator) => {
+                            let segment = Segment::separator(style, separator);
+                            Ok(vec![segment])
+                        }
                     }
                 })
                 .collect();
             Ok(results?.into_iter().flatten().collect())
         }
 
-        parse_format(
+        let parsed = parse_format(
             self.format,
             default_style,
             &self.variables,
             &self.style_variables,
             context,
-        )
+        );
+
+        for segment in &parsed {
+            if let Segment::Separator(SeparatorSegment { value, .. }) = segment {
+                if value.is_empty() {
+                    return Err("Empty separator found".into());
+                }
+            }
+        }
+
+        return parsed;
     }
 }
 

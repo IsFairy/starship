@@ -5,8 +5,26 @@ use crate::{
 use nu_ansi_term::{AnsiString, Style as AnsiStyle};
 use unicode_segmentation::UnicodeSegmentation;
 
+#[derive(Clone, Debug)]
+pub struct SeparatorSegment {
+    /// The segment's style. If None, will inherit the style of the module containing it.
+    style: Option<Style>,
+
+    /// The string value of the current segment.
+    value: String,
+}
+
+impl SeparatorSegment {
+    // Returns the AnsiString of the segment value
+    pub fn ansi_string(&self, prev: Option<&AnsiStyle>) -> AnsiString {
+        match self.style {
+            Some(style) => style.to_ansi_style(prev).paint(&self.value),
+            None => AnsiString::from(&self.value),
+        }
+    }
+}
 /// Type that holds text with an associated style
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TextSegment {
     /// The segment's style. If None, will inherit the style of the module containing it.
     style: Option<Style>,
@@ -26,7 +44,7 @@ impl TextSegment {
 }
 
 /// Type that holds fill text with an associated style
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct FillSegment {
     /// The segment's style. If None, will inherit the style of the module containing it.
     style: Option<Style>,
@@ -87,10 +105,11 @@ mod fill_seg_tests {
 }
 
 /// A segment is a styled text chunk ready for printing.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Segment {
     Text(TextSegment),
     Fill(FillSegment),
+    Separator(SeparatorSegment),
     LineTerm,
 }
 
@@ -124,10 +143,22 @@ impl Segment {
         })
     }
 
+    /// Creates a new separator segment
+    pub fn separator<T>(style: Option<Style>, value: T) -> Self
+    where
+        T: Into<String>,
+    {
+        Self::Separator(SeparatorSegment {
+            style,
+            value: value.into(),
+        })
+    }
+
     pub fn style(&self) -> Option<AnsiStyle> {
         match self {
             Self::Fill(fs) => fs.style.map(|cs| cs.to_ansi_style(None)),
             Self::Text(ts) => ts.style.map(|cs| cs.to_ansi_style(None)),
+            Self::Separator(ss) => ss.style.map(|cs| cs.to_ansi_style(None)),
             Self::LineTerm => None,
         }
     }
@@ -144,6 +175,11 @@ impl Segment {
                     ts.style = style
                 }
             }
+            Self::Separator(ss) => {
+                if ss.style.is_none() {
+                    ss.style = style
+                }
+            }
             Self::LineTerm => {}
         }
     }
@@ -152,6 +188,7 @@ impl Segment {
         match self {
             Self::Fill(fs) => &fs.value,
             Self::Text(ts) => &ts.value,
+            Self::Separator(ss) => &ss.value,
             Self::LineTerm => LINE_TERMINATOR_STRING,
         }
     }
@@ -161,6 +198,7 @@ impl Segment {
         match self {
             Self::Fill(fs) => fs.ansi_string(None, prev),
             Self::Text(ts) => ts.ansi_string(prev),
+            Self::Separator(ss) => ss.ansi_string(prev),
             Self::LineTerm => AnsiString::from(LINE_TERMINATOR_STRING),
         }
     }
@@ -169,6 +207,7 @@ impl Segment {
         match self {
             Self::Fill(fs) => fs.value.width_graphemes(),
             Self::Text(ts) => ts.value.width_graphemes(),
+            Self::Separator(ss) => ss.value.width_graphemes(),
             Self::LineTerm => 0,
         }
     }

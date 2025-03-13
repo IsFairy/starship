@@ -18,8 +18,13 @@ fn parse_value(value: Pair<Rule>) -> FormatElement {
         Rule::conditional => {
             FormatElement::Conditional(parse_format(value.into_inner().next().unwrap()))
         }
+        Rule::separator => FormatElement::Separator(parse_separator(value).into()),
         _ => unreachable!(),
     }
+}
+
+fn parse_separator(separator: Pair<Rule>) -> &str {
+    separator.into_inner().as_str()
 }
 
 fn parse_textgroup(textgroup: Pair<Rule>) -> TextGroup {

@@ -11,21 +11,22 @@ pub trait StyleVariableHolder<T> {
     fn get_style_variables(&self) -> BTreeSet<T>;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TextGroup<'a> {
     pub format: Vec<FormatElement<'a>>,
     pub style: Vec<StyleElement<'a>>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FormatElement<'a> {
     Text(Cow<'a, str>),
     Variable(Cow<'a, str>),
     TextGroup(TextGroup<'a>),
     Conditional(Vec<FormatElement<'a>>),
+    Separator(Cow<'a, str>),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum StyleElement<'a> {
     Text(Cow<'a, str>),
     Variable(Cow<'a, str>),
