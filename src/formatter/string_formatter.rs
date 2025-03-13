@@ -402,7 +402,7 @@ impl<'a> StringFormatter<'a> {
             Ok(results?.into_iter().flatten().collect())
         }
 
-        fn find_last_style<'a>(segments: &'a [Segment]) -> Option<&'a Segment> {
+        fn find_last_style(segments: &[Segment]) -> Option<&Segment> {
             segments
                 .iter()
                 .rev()
@@ -413,8 +413,8 @@ impl<'a> StringFormatter<'a> {
             let mut i = 0;
             while i < segments.len() {
                 if i + 1 < segments.len() {
-                    if let Segment::Separator(ref separator) = segments[i] {
-                        if let Segment::Separator(ref next_separator) = segments[i + 1] {
+                    if let Segment::Separator(ref _sep) = segments[i] {
+                        if let Segment::Separator(ref _next_sep) = segments[i + 1] {
                             segments.remove(i);
                             continue;
                         }
@@ -518,7 +518,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nu_ansi_term::{Color, Style as AnsiStyle};
+    use nu_ansi_term::Color;
 
     // match_next(result: IterMut<Segment>, value, style)
     macro_rules! match_next {
