@@ -403,7 +403,6 @@ impl<'a> StringFormatter<'a> {
         }
 
         fn find_last_style(segments: &[Segment]) -> Option<&Segment> {
-            println!("{:?}", segments);
             segments
                 .iter()
                 .rev()

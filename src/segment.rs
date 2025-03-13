@@ -32,7 +32,6 @@ impl SeparatorSegment {
 
     pub fn derive_style(&self, prev: Option<AnsiStyle>, next: Option<AnsiStyle>) -> AnsiStyle {
         let mut resulting_style = AnsiStyle::default();
-        println!("prev: {:?}, next: {:?}", prev, next);
         match (prev, next) {
             (Some(prev), Some(next)) => {
                 resulting_style.foreground = prev.background;
