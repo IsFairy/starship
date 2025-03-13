@@ -410,12 +410,22 @@ impl<'a> StringFormatter<'a> {
             context,
         );
 
-        for segment in &parsed {
-            if let Segment::Separator(SeparatorSegment { value, .. }) = segment {
-                if value.is_empty() {
-                    return Err("Empty separator found".into());
+        // Enumerate all Segments to set the styles for the separators
+        let mut iter = parsed.as_ref().map(Vec::iter).unwrap_or_default();
+        let mut last_segment = None;
+        let mut next_segment = iter.next();
+
+        while let (Some(last), Some(next)) = (last_segment, next_segment) {
+            if let Segment::Separator(ref mut last_separator) = last {
+                if let Segment::Text(ref next_text) = next {
+                    last_separator.value.push_str(&next_text.value);
+                    next_segment = iter.next();
+                    continue;
                 }
             }
+
+            last_segment = Some(next);
+            next_segment = iter.next();
         }
 
         return parsed;
