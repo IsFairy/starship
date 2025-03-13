@@ -402,7 +402,14 @@ impl<'a> StringFormatter<'a> {
             Ok(results?.into_iter().flatten().collect())
         }
 
-        let parsed = parse_format(
+        fn find_last_style<'a>(segments: &'a [Segment]) -> Option<&'a Segment> {
+            segments
+                .iter()
+                .rev()
+                .find(|segment| segment.style().is_some())
+        }
+
+        let mut parsed = parse_format(
             self.format,
             default_style,
             &self.variables,
@@ -410,25 +417,31 @@ impl<'a> StringFormatter<'a> {
             context,
         );
 
-        // Enumerate all Segments to set the styles for the separators
-        let mut iter = parsed.as_ref().map(Vec::iter).unwrap_or_default();
-        let mut last_segment = None;
-        let mut next_segment = iter.next();
+        let immutable_parsed = parsed.clone().map_or(vec![], |x| x);
 
-        while let (Some(last), Some(next)) = (last_segment, next_segment) {
-            if let Segment::Separator(ref mut last_separator) = last {
-                if let Segment::Text(ref next_text) = next {
-                    last_separator.value.push_str(&next_text.value);
-                    next_segment = iter.next();
-                    continue;
+        // Get a mutable reference to the parsed result
+        if let Ok(ref mut parsed_segments) = parsed {
+            // Track indices instead of immutable references
+            let segment_count = parsed_segments.len();
+            for i in 0..segment_count {
+                if i + 1 < segment_count {
+                    if let Segment::Separator(ref mut separator) = parsed_segments[i] {
+                        let last_style = if i > 0 {
+                            find_last_style(&immutable_parsed[..i]).map(|s| s.style())
+                        } else {
+                            None
+                        };
+                        let next_style = immutable_parsed[i + 1].style();
+                        separator.set_style(Some(SeparatorSegment::derive_style(
+                            last_style.unwrap_or_default(),
+                            next_style,
+                        )));
+                    }
                 }
             }
-
-            last_segment = Some(next);
-            next_segment = iter.next();
         }
 
-        return parsed;
+        parsed
     }
 }
 
@@ -486,7 +499,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nu_ansi_term::Color;
+    use nu_ansi_term::{Color, Style as AnsiStyle};
 
     // match_next(result: IterMut<Segment>, value, style)
     macro_rules! match_next {

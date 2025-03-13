@@ -22,6 +22,24 @@ impl SeparatorSegment {
             None => AnsiString::from(&self.value),
         }
     }
+
+    pub fn derive_style(prev: Option<AnsiStyle>, next: Option<AnsiStyle>) -> AnsiStyle {
+        let mut resulting_style = AnsiStyle::default();
+        match (prev, next) {
+            (Some(prev), Some(next)) => {
+                resulting_style.foreground = prev.background;
+                resulting_style.background = next.background;
+                resulting_style
+            }
+            (Some(prev), None) => prev.clone(),
+            (None, Some(next)) => next.clone(),
+            (None, None) => AnsiStyle::default(),
+        }
+    }
+
+    pub fn set_style(&mut self, style: Option<AnsiStyle>) {
+        self.style = style.map(|s| s.into());
+    }
 }
 /// Type that holds text with an associated style
 #[derive(Clone, Debug)]

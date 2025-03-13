@@ -316,7 +316,7 @@ fn compute_modules<'a>(context: &'a Context) -> Vec<Module<'a>> {
 
 fn handle_module<'a>(
     module: &str,
-    mut context: &'a Context,
+    context: &'a Context,
     module_list: &BTreeSet<String>,
 ) -> Vec<Module<'a>> {
     let mut modules: Vec<Module> = Vec::new();
