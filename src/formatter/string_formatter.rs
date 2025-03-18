@@ -7,7 +7,7 @@ use std::fmt;
 
 use crate::config::{Style, parse_style_string};
 use crate::context::{Context, Shell};
-use crate::segment::{Segment, SeparatorSegment};
+use crate::segment::Segment;
 
 use super::model::*;
 use super::parser::{Rule, parse};
