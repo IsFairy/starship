@@ -402,11 +402,11 @@ impl<'a> StringFormatter<'a> {
             Ok(results?.into_iter().flatten().collect())
         }
 
-        fn find_last_style(segments: &[Segment]) -> Option<&Segment> {
+        fn find_last_style_or_linebreak(segments: &[Segment]) -> Option<&Segment> {
             segments
                 .iter()
                 .rev()
-                .find(|segment| segment.style().is_some())
+                .find(|segment| segment.style().is_some() || segment.is_linebreak())
         }
 
         fn remove_double_separators(segments: &mut Vec<Segment>) {
@@ -446,7 +446,7 @@ impl<'a> StringFormatter<'a> {
                 if i + 1 < segment_count {
                     if let Segment::Separator(ref mut separator) = parsed_segments[i] {
                         let last_style = if i > 0 {
-                            find_last_style(&immutable_parsed[..i]).map(|s| s.style())
+                            find_last_style_or_linebreak(&immutable_parsed[..i]).map(|s| s.style())
                         } else {
                             None
                         };

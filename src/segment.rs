@@ -254,6 +254,10 @@ impl Segment {
             Self::LineTerm => 0,
         }
     }
+
+    pub fn is_linebreak(&self) -> bool {
+        matches!(self, Self::LineTerm)
+    }
 }
 
 const LINE_TERMINATOR: char = '\n';
