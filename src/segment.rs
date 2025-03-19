@@ -34,24 +34,16 @@ impl SeparatorSegment {
         let mut resulting_style = AnsiStyle::default();
         match (prev, next) {
             (Some(prev), Some(next)) => {
-                resulting_style.foreground = prev.background;
-                resulting_style.background = next.background;
+                resulting_style.foreground = next.background;
+                resulting_style.background = prev.background;
                 resulting_style
             }
             (Some(prev), None) => {
-                resulting_style.foreground = if self.left {
-                    prev.foreground
-                } else {
-                    prev.background
-                };
+                resulting_style.foreground = prev.background;
                 resulting_style
             }
             (None, Some(next)) => {
-                resulting_style.foreground = if self.left {
-                    next.background
-                } else {
-                    next.foreground
-                };
+                resulting_style.foreground = next.background;
                 resulting_style
             }
             (None, None) => AnsiStyle::default(),
