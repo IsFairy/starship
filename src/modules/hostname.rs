@@ -4,14 +4,7 @@ use crate::config::ModuleConfig;
 use crate::configs::hostname::HostnameConfig;
 use crate::formatter::StringFormatter;
 
-#[cfg(not(windows))]
 use whoami::fallible::hostname;
-// On Windows, whoami::hostname() returns the NetBIOS name,
-// but we prefer the "hostname" returned by whoami::devicname()
-// which does a better job of preserving case and returns the
-// DNS name.
-#[cfg(windows)]
-use whoami::fallible::devicename as hostname;
 
 /// Creates a module with the system hostname
 ///
@@ -37,12 +30,10 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
 
     //rustc doesn't let you do an "if" and an "if let" in the same if statement
     // if this changes in the future this can become a lot cleaner
-    let mut host = if !config.trim_at.is_empty() {
-        if let Some(index) = host.find(config.trim_at) {
-            host.split_at(index).0
-        } else {
-            host.as_ref()
-        }
+    let mut host = if config.trim_at.is_empty() {
+        host.as_ref()
+    } else if let Some(index) = host.find(config.trim_at) {
+        host.split_at(index).0
     } else {
         host.as_ref()
     };
@@ -77,7 +68,7 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     module.set_segments(match parsed {
         Ok(segments) => segments,
         Err(error) => {
-            log::warn!("Error in module `hostname`:\n{}", error);
+            log::warn!("Error in module `hostname`:\n{error}");
             return None;
         }
     });
