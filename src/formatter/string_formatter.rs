@@ -403,6 +403,7 @@ impl<'a> StringFormatter<'a> {
                                         .iter()
                                         .any(|f| should_show_format_element(f, variables)),
                                     FormatElement::Text(t) => !t.is_empty(),
+                                    FormatElement::Separator(s) => !s.is_empty(),
                                 }
                             }
 
